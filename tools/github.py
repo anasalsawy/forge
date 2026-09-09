@@ -103,9 +103,9 @@ class GitHubTool(BaseTool):
         data = self._req("GET", f"{API}/repos/{repo}")
         return data.get("default_branch", "main")
 
-    def _run(self, args: GitHubToolArgs) -> str:
+    def _run(self, **kwargs) -> str:
         try:
-            result = self._execute(args)
+            result = self._execute(GitHubToolArgs(**kwargs))
             return json.dumps({"ok": True, "result": result})
         except Exception as exc:  # noqa: BLE001 - surface to the agent as text
             return json.dumps({"ok": False, "error": str(exc)})
