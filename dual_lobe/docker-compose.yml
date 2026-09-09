@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dual_lobe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dual_lobe_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-dual_lobe}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: valkey/valkey:8-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: ["uvicorn", "dual_lobe.api.app:app", "--host", "0.0.0.0", "--port", "8801"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-dual_lobe}:${POSTGRES_PASSWORD:-dual_lobe_dev}@db:5432/${POSTGRES_DB:-dual_lobe}
+      RLS_DATABASE_URL: postgresql+asyncpg://dual_lobe_rls:dual_lobe_rls@db:5432/${POSTGRES_DB:-dual_lobe}
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "${DUAL_LOBE_PORT:-8801}:8801"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  b-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: ["python", "-m", "dual_lobe.b.worker"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-dual_lobe}:${POSTGRES_PASSWORD:-dual_lobe_dev}@db:5432/${POSTGRES_DB:-dual_lobe}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pg_data:

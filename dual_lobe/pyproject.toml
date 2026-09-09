@@ -1,0 +1,42 @@
+[project]
+name = "dual-lobe"
+version = "0.1.0"
+description = "Production-ready Dual-Lobe inference proxy: OpenAI-compatible gateway with an async Lobe-B (Context Shadow + Integrity Sentinel) and Postgres-backed source of truth."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "sqlalchemy[asyncio]>=2.0,<3",
+    "asyncpg>=0.29,<1",
+    "alembic>=1.13,<2",
+    "redis>=5,<6",
+    "structlog>=24,<25",
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.4,<3",
+    "httpx>=0.27,<1",
+    "litellm>=1.82,<1.83",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+    "pytest-asyncio>=0.24,<1",
+    "pytest-timeout>=2,<3",
+    "testcontainers[postgres]>=4.8,<5",
+    "opentelemetry-api>=1.27,<2",
+    "opentelemetry-sdk>=1.27,<2",
+    "opentelemetry-instrumentation-fastapi>=0.48,<1",
+    "opentelemetry-instrumentation-httpx>=0.48,<1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dual_lobe"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+timeout = 180

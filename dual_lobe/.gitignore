@@ -1,0 +1,9 @@
+.dual_lobe/
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+.env
+.pytest_cache/
