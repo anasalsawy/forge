@@ -1,1 +1,0 @@
-from . import telemetry  # noqa: F401

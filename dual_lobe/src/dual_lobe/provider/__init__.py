@@ -1,1 +1,0 @@
-from . import adapters, registry  # noqa: F401
