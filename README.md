@@ -21,9 +21,15 @@ when its analyst verdict passes:
 - Build: `build_floor_N -> build_gate_N -> build_pass_N -> build_floor_{N+1}`.
 - Any gate failure routes to `remediation_notice` and stops the pipeline.
 
-Workers and the research compiler bind to Gemini direct; analysts and the final
-auditor bind to GLM (featherless). API keys are injected from environment
-variables at kickoff time (see `main.py`), never baked into the definition.
+All agents bind to Gemini 3.5 Flash Lite (OpenAI-compatible endpoint). API
+keys are injected from environment variables at kickoff time, never baked
+into the definition.
+
+## Inference proxy
+
+The dual-lobe inference proxy (OpenAI-compatible gateway + async B-lobe
+verification pipeline) lives in its own repository:
+<https://github.com/anasalsawy/dual-lobe-proxy>
 
 ## Install
 
