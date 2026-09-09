@@ -1,0 +1,1324 @@
+{
+  "name": "DeepInvestigatorBuildPipeline",
+  "state": {
+    "type": "json_schema",
+    "json_schema": {
+      "type": "object",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "The investigation/build prompt supplied by the user"
+        },
+        "directive": {
+          "type": "string",
+          "description": "Operator directive (brief instruction) applied to the first floor of research/build, if any"
+        },
+        "final_verdict": {
+          "type": "string",
+          "description": "Final pipeline outcome: PASS or FAIL with details"
+        },
+        "human_decision": {
+          "type": "string",
+          "description": "Human checkpoint decision: APPROVE, REJECT, or RERUN"
+        },
+        "research_master_record": {
+          "type": "string",
+          "description": "Complete Research Master Record compiled by Research Floor 6, incorporating all floor findings"
+        }
+      }
+    }
+  },
+  "schema": "crewai.flow/v1",
+  "methods": {
+    "research_floor_1": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "worker_investigation",
+              "agent": "research_worker",
+              "description": "Conduct a complete, definitive investigation of: {prompt}.\n\nOPERATOR DIRECTIVE (mandatory, top priority):\n{directive}\n\n\nThere is no previous-floor handoff. Establish the first complete working state of the investigation.\n\nYou are fully and solely responsible for the ENTIRE investigation from all relevant aspects. Do not narrow yourself to a specialty, angle, source class, or assigned slice. Do not assume another researcher, later floor, analyst, or future pass will fill gaps you leave behind.\n\nYour job is to take the current best investigation state, independently understand the whole problem, verify what deserves to be preserved, correct what is wrong, pursue every material missing question or evidence gap, broaden context where useful, and advance the investigation toward a genuinely complete answer.\n\nWork cumulatively, not as a fresh parallel attempt. Preserve useful confirmed work from the inherited handoff, but never trust it blindly. Add, correct, reconcile, and deepen it. Search broadly and deeply across whatever sources and approaches the problem requires. Prefer primary evidence where available. Corroborate consequential claims. Capture source URLs and distinguish confirmed facts, inference, unresolved leads, contradictions, and open questions.\n\nReturn a CUMULATIVE HANDOFF that represents the best complete state of the entire investigation after your work, not merely a report of what you personally added. It must be sufficient for the next floor to continue without reconstructing earlier work.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.",
+              "expected_output": "A cumulative, source-grounded handoff representing the best complete state of the entire investigation: confirmed facts with URLs, evidence and corroboration, corrected or superseded prior claims, unresolved leads, contradictions, open questions, source inventory, and what changed in this pass."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Research Worker's cumulative investigation of: {prompt}.\n\nThe Worker's full cumulative handoff is available from the previous task. Judge the ENTIRE current investigation state, not merely this floor's additions. Verify that inherited work was actually carried forward, that material gaps were pursued, unsupported claims were not promoted to fact, contradictions/open questions are explicit, and the result addresses the whole prompt without relying on a later floor to finish it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nReview this floor as if it were the final research deliverable — judge whether it is complete and precise enough to hand to implementation, not merely whether it improved on the preceding floor. After your verdict, always close with exactly:\nOPEN QUESTIONS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved questions if any remain).",
+              "expected_output": "Either: FLOOR PASSED — investigation meets quality bar. Or: CORRECTION REQUIRED — exact list of gaps the Worker must address. Or (3rd pass only): PASSED WITH NOTES — remaining gaps listed, floor released."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. You are a rigorous quality gate. Assess completeness: does the output fully address the prompt with sourced evidence? Assess integrity: are claimed URLs real, are facts cited, is inference distinguished from observation? Assess coverage: were multiple angles searched, are key claims multi-sourced? If deficiencies are found, issue a CORRECTION REQUIRED notice listing exact gaps — the Worker must address them. You may require corrections up to 3 times. On the 3rd review, if deficiencies still exist, issue PASSED WITH NOTES listing what remains unresolved, then pass the floor. Never block indefinitely.",
+              "role": "Floor Research Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a sharp investigative quality analyst. You hold research to a high standard but know when to let work through. You distinguish genuine gaps from perfectionism. Your job is to ensure the floor produces the best achievable output within its constraints.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            },
+            "research_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
+              "role": "Chief Research Investigator",
+              "tools": [
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior investigator with end-to-end accountability. You inherit work without becoming anchored to it. You independently reconstruct the problem, preserve what is supported, challenge assumptions, find missing questions, pursue the strongest available evidence, reconcile contradictions, and leave a cumulative record that is more complete and more reliable than the state you received. You never assume another floor will cover anything you omit.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "directive": "${state.directive}"
+          },
+          "verbose": true
+        }
+      },
+      "start": true,
+      "description": "Initial full-scope cumulative research floor."
+    },
+    "research_gate_1": {
+      "description": "Gate for research_floor_1: route to research_1_pass or research_1_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.research_floor_1.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.research_floor_1.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"research_1_pass\" : \"research_1_fail\""
+      },
+      "listen": "research_floor_1",
+      "router": true,
+      "emit": [
+        "research_1_pass",
+        "research_1_fail"
+      ]
+    },
+    "research_floor_2": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "worker_investigation",
+              "agent": "research_worker",
+              "description": "Conduct a complete, definitive investigation of: {prompt}.\n\nINHERITED PREVIOUS-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current working state. Continue from it; do not restart.\n\nYou are fully and solely responsible for the ENTIRE investigation from all relevant aspects. Do not narrow yourself to a specialty, angle, source class, or assigned slice. Do not assume another researcher, later floor, analyst, or future pass will fill gaps you leave behind.\n\nYour job is to take the current best investigation state, independently understand the whole problem, verify what deserves to be preserved, correct what is wrong, pursue every material missing question or evidence gap, broaden context where useful, and advance the investigation toward a genuinely complete answer.\n\nWork cumulatively, not as a fresh parallel attempt. Preserve useful confirmed work from the inherited handoff, but never trust it blindly. Add, correct, reconcile, and deepen it. Search broadly and deeply across whatever sources and approaches the problem requires. Prefer primary evidence where available. Corroborate consequential claims. Capture source URLs and distinguish confirmed facts, inference, unresolved leads, contradictions, and open questions.\n\nReturn a CUMULATIVE HANDOFF that represents the best complete state of the entire investigation after your work, not merely a report of what you personally added. It must be sufficient for the next floor to continue without reconstructing earlier work.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.",
+              "expected_output": "A cumulative, source-grounded handoff representing the best complete state of the entire investigation: confirmed facts with URLs, evidence and corroboration, corrected or superseded prior claims, unresolved leads, contradictions, open questions, source inventory, and what changed in this pass."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Research Worker's cumulative investigation of: {prompt}.\n\nThe Worker's full cumulative handoff is available from the previous task. Judge the ENTIRE current investigation state, not merely this floor's additions. Verify that inherited work was actually carried forward, that material gaps were pursued, unsupported claims were not promoted to fact, contradictions/open questions are explicit, and the result addresses the whole prompt without relying on a later floor to finish it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nReview this floor as if it were the final research deliverable — judge whether it is complete and precise enough to hand to implementation, not merely whether it improved on the preceding floor. After your verdict, always close with exactly:\nOPEN QUESTIONS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved questions if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Research Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a sharp investigative quality analyst. You hold research to a high standard but know when to let work through. You distinguish genuine gaps from perfectionism.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            },
+            "research_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
+              "role": "Chief Research Investigator",
+              "tools": [
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior investigator with end-to-end accountability. You inherit work without becoming anchored to it. You independently reconstruct the problem, preserve what is supported, challenge assumptions, find missing questions, pursue the strongest available evidence, reconcile contradictions, and leave a cumulative record that is more complete and more reliable than the state you received. You never assume another floor will cover anything you omit.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "previous_handoff": "${outputs.research_floor_1.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "research_pass_1",
+      "description": "Full-scope cumulative research floor; inherits and advances Research Floor 1."
+    },
+    "research_gate_2": {
+      "description": "Gate for research_floor_2: route to research_2_pass or research_2_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.research_floor_2.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.research_floor_2.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"research_2_pass\" : \"research_2_fail\""
+      },
+      "listen": "research_floor_2",
+      "router": true,
+      "emit": [
+        "research_2_pass",
+        "research_2_fail"
+      ]
+    },
+    "research_floor_3": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "worker_investigation",
+              "agent": "research_worker",
+              "description": "Conduct a complete, definitive investigation of: {prompt}.\n\nINHERITED PREVIOUS-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current working state. Continue from it; do not restart.\n\nYou are fully and solely responsible for the ENTIRE investigation from all relevant aspects. Do not narrow yourself to a specialty, angle, source class, or assigned slice. Do not assume another researcher, later floor, analyst, or future pass will fill gaps you leave behind.\n\nYour job is to take the current best investigation state, independently understand the whole problem, verify what deserves to be preserved, correct what is wrong, pursue every material missing question or evidence gap, broaden context where useful, and advance the investigation toward a genuinely complete answer.\n\nWork cumulatively, not as a fresh parallel attempt. Preserve useful confirmed work from the inherited handoff, but never trust it blindly. Add, correct, reconcile, and deepen it. Search broadly and deeply across whatever sources and approaches the problem requires. Prefer primary evidence where available. Corroborate consequential claims. Capture source URLs and distinguish confirmed facts, inference, unresolved leads, contradictions, and open questions.\n\nReturn a CUMULATIVE HANDOFF that represents the best complete state of the entire investigation after your work, not merely a report of what you personally added. It must be sufficient for the next floor to continue without reconstructing earlier work.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.",
+              "expected_output": "A cumulative, source-grounded handoff representing the best complete state of the entire investigation: confirmed facts with URLs, evidence and corroboration, corrected or superseded prior claims, unresolved leads, contradictions, open questions, source inventory, and what changed in this pass."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Research Worker's cumulative investigation of: {prompt}.\n\nThe Worker's full cumulative handoff is available from the previous task. Judge the ENTIRE current investigation state, not merely this floor's additions. Verify that inherited work was actually carried forward, that material gaps were pursued, unsupported claims were not promoted to fact, contradictions/open questions are explicit, and the result addresses the whole prompt without relying on a later floor to finish it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nReview this floor as if it were the final research deliverable — judge whether it is complete and precise enough to hand to implementation, not merely whether it improved on the preceding floor. After your verdict, always close with exactly:\nOPEN QUESTIONS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved questions if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Research Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a sharp investigative quality analyst. You hold research to a high standard but know when to let work through. You distinguish genuine gaps from perfectionism.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            },
+            "research_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
+              "role": "Chief Research Investigator",
+              "tools": [
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior investigator with end-to-end accountability. You inherit work without becoming anchored to it. You independently reconstruct the problem, preserve what is supported, challenge assumptions, find missing questions, pursue the strongest available evidence, reconcile contradictions, and leave a cumulative record that is more complete and more reliable than the state you received. You never assume another floor will cover anything you omit.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "previous_handoff": "${outputs.research_floor_2.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "research_pass_2",
+      "description": "Full-scope cumulative research floor; inherits and advances Research Floor 2."
+    },
+    "research_gate_3": {
+      "description": "Gate for research_floor_3: route to research_3_pass or research_3_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.research_floor_3.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.research_floor_3.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"research_3_pass\" : \"research_3_fail\""
+      },
+      "listen": "research_floor_3",
+      "router": true,
+      "emit": [
+        "research_3_pass",
+        "research_3_fail"
+      ]
+    },
+    "research_floor_4": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "worker_investigation",
+              "agent": "research_worker",
+              "description": "Conduct a complete, definitive investigation of: {prompt}.\n\nINHERITED PREVIOUS-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current working state. Continue from it; do not restart.\n\nYou are fully and solely responsible for the ENTIRE investigation from all relevant aspects. Do not narrow yourself to a specialty, angle, source class, or assigned slice. Do not assume another researcher, later floor, analyst, or future pass will fill gaps you leave behind.\n\nYour job is to take the current best investigation state, independently understand the whole problem, verify what deserves to be preserved, correct what is wrong, pursue every material missing question or evidence gap, broaden context where useful, and advance the investigation toward a genuinely complete answer.\n\nWork cumulatively, not as a fresh parallel attempt. Preserve useful confirmed work from the inherited handoff, but never trust it blindly. Add, correct, reconcile, and deepen it. Search broadly and deeply across whatever sources and approaches the problem requires. Prefer primary evidence where available. Corroborate consequential claims. Capture source URLs and distinguish confirmed facts, inference, unresolved leads, contradictions, and open questions.\n\nReturn a CUMULATIVE HANDOFF that represents the best complete state of the entire investigation after your work, not merely a report of what you personally added. It must be sufficient for the next floor to continue without reconstructing earlier work.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.",
+              "expected_output": "A cumulative, source-grounded handoff representing the best complete state of the entire investigation: confirmed facts with URLs, evidence and corroboration, corrected or superseded prior claims, unresolved leads, contradictions, open questions, source inventory, and what changed in this pass."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Research Worker's cumulative investigation of: {prompt}.\n\nThe Worker's full cumulative handoff is available from the previous task. Judge the ENTIRE current investigation state, not merely this floor's additions. Verify that inherited work was actually carried forward, that material gaps were pursued, unsupported claims were not promoted to fact, contradictions/open questions are explicit, and the result addresses the whole prompt without relying on a later floor to finish it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nReview this floor as if it were the final research deliverable — judge whether it is complete and precise enough to hand to implementation, not merely whether it improved on the preceding floor. After your verdict, always close with exactly:\nOPEN QUESTIONS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved questions if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Research Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a sharp investigative quality analyst. You hold research to a high standard but know when to let work through. You distinguish genuine gaps from perfectionism.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            },
+            "research_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
+              "role": "Chief Research Investigator",
+              "tools": [
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior investigator with end-to-end accountability. You inherit work without becoming anchored to it. You independently reconstruct the problem, preserve what is supported, challenge assumptions, find missing questions, pursue the strongest available evidence, reconcile contradictions, and leave a cumulative record that is more complete and more reliable than the state you received. You never assume another floor will cover anything you omit.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "previous_handoff": "${outputs.research_floor_3.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "research_pass_3",
+      "description": "Full-scope cumulative research floor; inherits and advances Research Floor 3."
+    },
+    "research_gate_4": {
+      "description": "Gate for research_floor_4: route to research_4_pass or research_4_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.research_floor_4.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.research_floor_4.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"research_4_pass\" : \"research_4_fail\""
+      },
+      "listen": "research_floor_4",
+      "router": true,
+      "emit": [
+        "research_4_pass",
+        "research_4_fail"
+      ]
+    },
+    "research_floor_5": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "worker_investigation",
+              "agent": "research_worker",
+              "description": "Conduct a complete, definitive investigation of: {prompt}.\n\nINHERITED PREVIOUS-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current working state. Continue from it; do not restart.\n\nYou are fully and solely responsible for the ENTIRE investigation from all relevant aspects. Do not narrow yourself to a specialty, angle, source class, or assigned slice. Do not assume another researcher, later floor, analyst, or future pass will fill gaps you leave behind.\n\nYour job is to take the current best investigation state, independently understand the whole problem, verify what deserves to be preserved, correct what is wrong, pursue every material missing question or evidence gap, broaden context where useful, and advance the investigation toward a genuinely complete answer.\n\nWork cumulatively, not as a fresh parallel attempt. Preserve useful confirmed work from the inherited handoff, but never trust it blindly. Add, correct, reconcile, and deepen it. Search broadly and deeply across whatever sources and approaches the problem requires. Prefer primary evidence where available. Corroborate consequential claims. Capture source URLs and distinguish confirmed facts, inference, unresolved leads, contradictions, and open questions.\n\nReturn a CUMULATIVE HANDOFF that represents the best complete state of the entire investigation after your work, not merely a report of what you personally added. It must be sufficient for the next floor to continue without reconstructing earlier work.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.",
+              "expected_output": "A cumulative, source-grounded handoff representing the best complete state of the entire investigation: confirmed facts with URLs, evidence and corroboration, corrected or superseded prior claims, unresolved leads, contradictions, open questions, source inventory, and what changed in this pass."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Research Worker's cumulative investigation of: {prompt}.\n\nThe Worker's full cumulative handoff is available from the previous task. Judge the ENTIRE current investigation state, not merely this floor's additions. Verify that inherited work was actually carried forward, that material gaps were pursued, unsupported claims were not promoted to fact, contradictions/open questions are explicit, and the result addresses the whole prompt without relying on a later floor to finish it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nReview this floor as if it were the final research deliverable — judge whether it is complete and precise enough to hand to implementation, not merely whether it improved on the preceding floor. After your verdict, always close with exactly:\nOPEN QUESTIONS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved questions if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Research Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a sharp investigative quality analyst. You hold research to a high standard but know when to let work through. You distinguish genuine gaps from perfectionism.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            },
+            "research_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
+              "role": "Chief Research Investigator",
+              "tools": [
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior investigator with end-to-end accountability. You inherit work without becoming anchored to it. You independently reconstruct the problem, preserve what is supported, challenge assumptions, find missing questions, pursue the strongest available evidence, reconcile contradictions, and leave a cumulative record that is more complete and more reliable than the state you received. You never assume another floor will cover anything you omit.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "previous_handoff": "${outputs.research_floor_4.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "research_pass_4",
+      "description": "Full-scope cumulative research floor; inherits and advances Research Floor 4."
+    },
+    "research_gate_5": {
+      "description": "Gate for research_floor_5: route to research_5_pass or research_5_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.research_floor_5.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.research_floor_5.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"research_5_pass\" : \"research_5_fail\""
+      },
+      "listen": "research_floor_5",
+      "router": true,
+      "emit": [
+        "research_5_pass",
+        "research_5_fail"
+      ]
+    },
+    "research_floor_6": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "worker_final_investigation",
+              "agent": "research_worker",
+              "description": "Conduct a complete, definitive investigation of: {prompt}.\n\nINHERITED PREVIOUS-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current working state. Continue from it; do not restart.\n\nYou are fully and solely responsible for the ENTIRE investigation from all relevant aspects. Do not narrow yourself to a specialty, angle, source class, or assigned slice. Do not assume another researcher, later floor, analyst, or future pass will fill gaps you leave behind.\n\nYour job is to take the current best investigation state, independently understand the whole problem, verify what deserves to be preserved, correct what is wrong, pursue every material missing question or evidence gap, broaden context where useful, and advance the investigation toward a genuinely complete answer.\n\nWork cumulatively, not as a fresh parallel attempt. Preserve useful confirmed work from the inherited handoff, but never trust it blindly. Add, correct, reconcile, and deepen it. Search broadly and deeply across whatever sources and approaches the problem requires. Prefer primary evidence where available. Corroborate consequential claims. Capture source URLs and distinguish confirmed facts, inference, unresolved leads, contradictions, and open questions.\n\nReturn a CUMULATIVE HANDOFF that represents the best complete state of the entire investigation after your work, not merely a report of what you personally added. It must be sufficient for the next floor to continue without reconstructing earlier work.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.",
+              "expected_output": "A cumulative, source-grounded handoff representing the best complete state of the entire investigation: confirmed facts with URLs, evidence and corroboration, corrected or superseded prior claims, unresolved leads, contradictions, open questions, source inventory, and what changed in this pass."
+            },
+            {
+              "name": "analyst_final_review",
+              "agent": "floor_analyst",
+              "description": "Review the Research Worker's cumulative investigation of: {prompt}.\n\nThe Worker's full cumulative handoff is available from the previous task. Judge the ENTIRE current investigation state, not merely this floor's additions. Verify that inherited work was actually carried forward, that material gaps were pursued, unsupported claims were not promoted to fact, contradictions/open questions are explicit, and the result addresses the whole prompt without relying on a later floor to finish it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nReview this floor as if it were the final research deliverable — judge whether it is complete and precise enough to hand to implementation, not merely whether it improved on the preceding floor. After your verdict, always close with exactly:\nOPEN QUESTIONS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved questions if any remain).",
+              "expected_output": "FLOOR PASSED releasing to Compiler, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES releasing to Compiler."
+            },
+            {
+              "name": "compile_master_record",
+              "agent": "research_compiler",
+              "description": "Compile the DEFINITIVE RESEARCH MASTER RECORD for: {prompt}.\n\nInherited cumulative handoff from Floor 5:\n{previous_handoff}\n\nThe final Floor 6 Worker handoff and analyst review are available from the preceding tasks. Compile the complete cumulative investigation state, preserving evidence and provenance rather than summarizing away detail.\n\nRequired sections:\n## INVESTIGATION TRAIL\n## CONFIRMED FACTS (URLs + evidence/corroboration)\n## CORRECTED OR SUPERSEDED CLAIMS\n## UNCONFIRMED LEADS\n## CONTRADICTIONS\n## COMPLETE URL INVENTORY\n## OPEN QUESTIONS / RESIDUAL UNCERTAINTY\n## FINAL EVIDENCE STATE\n\nThe record must represent the whole six-floor investigation, not just Floor 6.\n\nITERATION BUDGET: you have up to 10 reasoning iterations to complete this reconciliation. Consolidate decisively, then produce the record.\n\nThis is a reconciliation task, not a summary. Assemble the complete research body and explicitly distinguish: validated findings, implementation/design conclusions, constraints, risks, dependencies, source/evidence basis, unresolved uncertainty, recommended implementation approach, and open questions that genuinely could not be resolved. Do not silently convert uncertainty into certainty.",
+              "expected_output": "The complete Research Master Record covering all sections: Investigation Trail, Confirmed Facts with URLs, Unconfirmed Leads with status, Contradictions, Complete URL Inventory, and Open Questions."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely. The Research Compiler depends on your clearance.",
+              "role": "Floor Research Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a sharp investigative quality analyst and the final gate before the Master Record is compiled. You hold research to a high standard but know when to let work through. You distinguish genuine gaps from perfectionism.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            },
+            "research_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
+              "role": "Chief Research Investigator",
+              "tools": [
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior investigator with end-to-end accountability. You inherit work without becoming anchored to it. You independently reconstruct the problem, preserve what is supported, challenge assumptions, find missing questions, pursue the strongest available evidence, reconcile contradictions, and leave a cumulative record that is more complete and more reliable than the state you received. You never assume another floor will cover anything you omit.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            },
+            "research_compiler": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Compile the DEFINITIVE RESEARCH MASTER RECORD for prompt: {prompt}. Integrate all findings from this complete investigation into one comprehensive document. Include: (1) INVESTIGATION TRAIL summarizing what was found, (2) CONFIRMED FACTS each with source URLs and corroboration count, (3) UNCONFIRMED LEADS each with final status, (4) CONTRADICTIONS with conflicting sources listed, (5) COMPLETE URL INVENTORY of every URL visited, (6) OPEN QUESTIONS that could not be resolved. Do NOT summarize or compress. This is the complete raw record.",
+              "role": "Research Master Record Compiler",
+              "verbose": true,
+              "max_iter": 10,
+              "backstory": "You are the final analyst in this investigative pipeline. Your job is not to summarize but to compile. You take the complete body of evidence gathered and assemble it into a definitive record. You are exhaustive and precise.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "previous_handoff": "${outputs.research_floor_5.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "research_pass_5",
+      "description": "Full-scope cumulative research floor; inherits and advances Research Floor 5."
+    },
+    "research_gate_6": {
+      "description": "Gate for research_floor_6: route to research_6_pass or research_6_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.research_floor_6.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.research_floor_6.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"research_6_pass\" : \"research_6_fail\""
+      },
+      "listen": "research_floor_6",
+      "router": true,
+      "emit": [
+        "research_6_pass",
+        "research_6_fail"
+      ]
+    },
+    "human_checkpoint": {
+      "do": {
+        "call": "agent",
+        "with": {
+          "llm": {
+            "model": "openai/gemini-3.5-flash-lite",
+            "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+            "api_key": ""
+          },
+          "goal": "Present the completed Research Master Record to the human reviewer and collect their decision on whether to proceed to the build phase, reject the investigation, or request a re-run.",
+          "role": "Research Review Coordinator",
+          "input": "The 6-floor investigation is complete for prompt: '${state.prompt}'\n\nResearch Master Record:\n${outputs.research_floor_6.tasks_output[2].raw}\n\n---\nPLEASE REVIEW THE ABOVE RESEARCH MASTER RECORD AND PROVIDE YOUR DECISION:\n- Type APPROVE to proceed to the build phase\n- Type REJECT to abort the pipeline\n- Type RERUN to restart the investigation with refinements (describe what to change)\n\nYour decision determines whether the Build Pipeline is activated.",
+          "verbose": true,
+          "max_iter": 5,
+          "backstory": "You coordinate the handoff between the research phase and the build phase. You ensure the human reviewer has full visibility into what the investigation found and receives a clear, well-organized summary to make an informed decision.",
+          "inject_date": true,
+          "planning_config": {
+            "max_attempts": 1
+          },
+          "allow_delegation": false
+        }
+      },
+      "listen": "research_pass_6",
+      "description": "Human Checkpoint: presents the completed Research Master Record for human review. The human can approve (proceed to build), reject (abort), or request a re-run of the investigation."
+    },
+    "human_gate": {
+      "description": "Gate on human checkpoint decision.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.human_checkpoint.raw.contains(\"APPROVE\") ? \"human_approved\" : \"human_rejected\""
+      },
+      "listen": "human_checkpoint",
+      "router": true,
+      "emit": [
+        "human_approved",
+        "human_rejected"
+      ]
+    },
+    "build_floor_1": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "builder_implementation",
+              "agent": "builder_worker",
+              "description": "Implement a complete, validated solution for: {prompt}.\n\nOPERATOR DIRECTIVE (mandatory, top priority):\n{directive}\n\n\nResearch Master Record (primary):\n{research_master}\n\nSupporting Research Evidence:\n{supporting_research}\n\nThere is no previous build-floor handoff. Establish the first complete implementation state from the research and current workspace.\n\nYou are fully and solely responsible for the ENTIRE implementation from all relevant aspects. Do not narrow yourself to a specialty, component, or assigned slice. Do not assume another engineer, later floor, analyst, or future pass will implement, repair, test, or validate anything you leave behind.\n\nWork cumulatively from the current project state and inherited handoff. Inspect the workspace before changing it. Preserve correct existing work, independently verify important inherited claims, correct defects, complete missing requirements, resolve blockers, integrate components, and run real validation. Do not restart the project or produce a parallel partial solution.\n\nReturn a CUMULATIVE IMPLEMENTATION HANDOFF representing the best complete state of the whole solution after your pass, not merely your own changes. Include: (1) current complete implementation state, (2) exact files changed in this pass and important inherited files relied on, (3) validation commands actually run and real results, (4) remaining unresolved issues or risks, (5) exact evidence/review targets. The next floor must be able to continue directly from this handoff and workspace state.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.\n\nCOMPLETE DELIVERABLE SET — produce ALL of these, no component may be omitted:\n1. VOICE REAL-TIME CONVERSATIONAL LAYER: mic capture, voice-activity detection, streaming ASR, streaming low-latency LLM, barge-in with interruptible chunked TTS.\n2. TEXT CHAT CONVERSATIONAL LAYER sharing the same reasoning core as voice.\n3. COMPUTER-USE LAYER for the agent: screen capture, vision understanding, deterministic action grammar, safe executor, and a self-correction loop.\n4. IMAGE GENERATION LAYER: image generation callable from both voice and text.\n5. WINDOWS OUT-OF-THE-BOX PACKAGING: one-click install + start scripts for Windows.\n6. LOW LATENCY: streaming everywhere, prewarmed models, no blocking downloads on first use.\n7. ROBUSTNESS: every failure is recoverable or degrades gracefully with a clear message; no crashes.\nAuthor real code files, run real validation (compile + tests) using your execution tools, and commit the finished project to the configured workspace/repo. Do not defer any of the above to a later floor.",
+              "expected_output": "A cumulative implementation handoff representing the best complete state of the entire solution: current implementation status, files changed and relied upon, real validation evidence, corrected inherited claims, unresolved defects/risks, and exact review targets."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Builder's cumulative implementation of: {prompt}.\n\nThe full cumulative implementation handoff is available from the previous task. Judge the ENTIRE current solution state, not merely this floor's edits. Confirm inherited work was preserved or deliberately corrected, requirements are implemented end-to-end, claimed file changes and validation are genuine, and no material work is deferred on the assumption that a later floor will fix it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nJudge this implementation as if it were the final project, not merely this floor's delta. Verify claimed file changes and validation evidence would survive inspection — never accept fabricated commits, files, tests, or terminal output as real. After your verdict, always close with exactly:\nUNRESOLVED DEFECTS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved defects if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and the full research record. Determine what is correct, what is incomplete, what is broken, and whether claimed validation is real. Assess completeness: does the output fully implement the requirements? Assess integrity: are claimed file changes real, is validation evidence genuine (not invented), are command outputs real? If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Build Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a rigorous build quality analyst. You hold implementation to a high standard but know when to let work through. You distinguish genuine gaps and fabricated evidence from imperfect-but-real work.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false,
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ]
+            },
+            "builder_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
+              "role": "Chief Implementation Engineer",
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:FileWriteTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool",
+                "crewai_tools:DirectorySearchTool",
+                "crewai_tools:FileCompressorTool",
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:WaitTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior end-to-end implementation engineer with full accountability. You inherit working state without blindly trusting it, inspect before editing, preserve valid work, correct defects, close missing requirements, resolve integration issues, and run real validation. You never assume another floor will cover anything you omit, and every pass must leave the whole project materially closer to complete and verified.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "research_master": "${outputs.research_floor_6.tasks_output[2].raw}",
+            "supporting_research": "FLOOR 1:\n${outputs.research_floor_1.tasks_output[0].raw}\n\nFLOOR 2:\n${outputs.research_floor_2.tasks_output[0].raw}\n\nFLOOR 3:\n${outputs.research_floor_3.tasks_output[0].raw}\n\nFLOOR 4:\n${outputs.research_floor_4.tasks_output[0].raw}\n\nFLOOR 5:\n${outputs.research_floor_5.tasks_output[0].raw}",
+            "directive": "${state.directive}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "human_approved",
+      "description": "Initial full-scope cumulative build floor."
+    },
+    "build_gate_1": {
+      "description": "Gate for build_floor_1: route to build_1_pass or build_1_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.build_floor_1.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.build_floor_1.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"build_1_pass\" : \"build_1_fail\""
+      },
+      "listen": "build_floor_1",
+      "router": true,
+      "emit": [
+        "build_1_pass",
+        "build_1_fail"
+      ]
+    },
+    "build_floor_2": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "builder_implementation",
+              "agent": "builder_worker",
+              "description": "Implement a complete, validated solution for: {prompt}.\n\nResearch Master Record (primary):\n{research_master}\n\nSupporting Research Evidence:\n{supporting_research}\n\nINHERITED PREVIOUS BUILD-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current implementation handoff. Continue from it and the existing workspace; do not restart.\n\nYou are fully and solely responsible for the ENTIRE implementation from all relevant aspects. Do not narrow yourself to a specialty, component, or assigned slice. Do not assume another engineer, later floor, analyst, or future pass will implement, repair, test, or validate anything you leave behind.\n\nWork cumulatively from the current project state and inherited handoff. Inspect the workspace before changing it. Preserve correct existing work, independently verify important inherited claims, correct defects, complete missing requirements, resolve blockers, integrate components, and run real validation. Do not restart the project or produce a parallel partial solution.\n\nReturn a CUMULATIVE IMPLEMENTATION HANDOFF representing the best complete state of the whole solution after your pass, not merely your own changes. Include: (1) current complete implementation state, (2) exact files changed in this pass and important inherited files relied on, (3) validation commands actually run and real results, (4) remaining unresolved issues or risks, (5) exact evidence/review targets. The next floor must be able to continue directly from this handoff and workspace state.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.\n\nCOMPLETE DELIVERABLE SET — produce ALL of these, no component may be omitted:\n1. VOICE REAL-TIME CONVERSATIONAL LAYER: mic capture, voice-activity detection, streaming ASR, streaming low-latency LLM, barge-in with interruptible chunked TTS.\n2. TEXT CHAT CONVERSATIONAL LAYER sharing the same reasoning core as voice.\n3. COMPUTER-USE LAYER for the agent: screen capture, vision understanding, deterministic action grammar, safe executor, and a self-correction loop.\n4. IMAGE GENERATION LAYER: image generation callable from both voice and text.\n5. WINDOWS OUT-OF-THE-BOX PACKAGING: one-click install + start scripts for Windows.\n6. LOW LATENCY: streaming everywhere, prewarmed models, no blocking downloads on first use.\n7. ROBUSTNESS: every failure is recoverable or degrades gracefully with a clear message; no crashes.\nAuthor real code files, run real validation (compile + tests) using your execution tools, and commit the finished project to the configured workspace/repo. Do not defer any of the above to a later floor.",
+              "expected_output": "A cumulative implementation handoff representing the best complete state of the entire solution: current implementation status, files changed and relied upon, real validation evidence, corrected inherited claims, unresolved defects/risks, and exact review targets."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Builder's cumulative implementation of: {prompt}.\n\nThe full cumulative implementation handoff is available from the previous task. Judge the ENTIRE current solution state, not merely this floor's edits. Confirm inherited work was preserved or deliberately corrected, requirements are implemented end-to-end, claimed file changes and validation are genuine, and no material work is deferred on the assumption that a later floor will fix it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nJudge this implementation as if it were the final project, not merely this floor's delta. Verify claimed file changes and validation evidence would survive inspection — never accept fabricated commits, files, tests, or terminal output as real. After your verdict, always close with exactly:\nUNRESOLVED DEFECTS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved defects if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Build Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a rigorous build quality analyst. You hold implementation to a high standard but know when to let work through. You distinguish genuine gaps and fabricated evidence from imperfect-but-real work.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false,
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ]
+            },
+            "builder_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
+              "role": "Chief Implementation Engineer",
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:FileWriteTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool",
+                "crewai_tools:DirectorySearchTool",
+                "crewai_tools:FileCompressorTool",
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:WaitTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior end-to-end implementation engineer with full accountability. You inherit working state without blindly trusting it, inspect before editing, preserve valid work, correct defects, close missing requirements, resolve integration issues, and run real validation. You never assume another floor will cover anything you omit, and every pass must leave the whole project materially closer to complete and verified.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "research_master": "${outputs.research_floor_6.tasks_output[2].raw}",
+            "supporting_research": "FLOOR 1:\n${outputs.research_floor_1.tasks_output[0].raw}\n\nFLOOR 2:\n${outputs.research_floor_2.tasks_output[0].raw}\n\nFLOOR 3:\n${outputs.research_floor_3.tasks_output[0].raw}\n\nFLOOR 4:\n${outputs.research_floor_4.tasks_output[0].raw}\n\nFLOOR 5:\n${outputs.research_floor_5.tasks_output[0].raw}",
+            "previous_handoff": "${outputs.build_floor_1.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "build_pass_1",
+      "description": "Full-scope cumulative build floor; inherits and advances Build Floor 1."
+    },
+    "build_gate_2": {
+      "description": "Gate for build_floor_2: route to build_2_pass or build_2_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.build_floor_2.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.build_floor_2.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"build_2_pass\" : \"build_2_fail\""
+      },
+      "listen": "build_floor_2",
+      "router": true,
+      "emit": [
+        "build_2_pass",
+        "build_2_fail"
+      ]
+    },
+    "build_floor_3": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "builder_implementation",
+              "agent": "builder_worker",
+              "description": "Implement a complete, validated solution for: {prompt}.\n\nResearch Master Record (primary):\n{research_master}\n\nSupporting Research Evidence:\n{supporting_research}\n\nINHERITED PREVIOUS BUILD-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current implementation handoff. Continue from it and the existing workspace; do not restart.\n\nYou are fully and solely responsible for the ENTIRE implementation from all relevant aspects. Do not narrow yourself to a specialty, component, or assigned slice. Do not assume another engineer, later floor, analyst, or future pass will implement, repair, test, or validate anything you leave behind.\n\nWork cumulatively from the current project state and inherited handoff. Inspect the workspace before changing it. Preserve correct existing work, independently verify important inherited claims, correct defects, complete missing requirements, resolve blockers, integrate components, and run real validation. Do not restart the project or produce a parallel partial solution.\n\nReturn a CUMULATIVE IMPLEMENTATION HANDOFF representing the best complete state of the whole solution after your pass, not merely your own changes. Include: (1) current complete implementation state, (2) exact files changed in this pass and important inherited files relied on, (3) validation commands actually run and real results, (4) remaining unresolved issues or risks, (5) exact evidence/review targets. The next floor must be able to continue directly from this handoff and workspace state.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.\n\nCOMPLETE DELIVERABLE SET — produce ALL of these, no component may be omitted:\n1. VOICE REAL-TIME CONVERSATIONAL LAYER: mic capture, voice-activity detection, streaming ASR, streaming low-latency LLM, barge-in with interruptible chunked TTS.\n2. TEXT CHAT CONVERSATIONAL LAYER sharing the same reasoning core as voice.\n3. COMPUTER-USE LAYER for the agent: screen capture, vision understanding, deterministic action grammar, safe executor, and a self-correction loop.\n4. IMAGE GENERATION LAYER: image generation callable from both voice and text.\n5. WINDOWS OUT-OF-THE-BOX PACKAGING: one-click install + start scripts for Windows.\n6. LOW LATENCY: streaming everywhere, prewarmed models, no blocking downloads on first use.\n7. ROBUSTNESS: every failure is recoverable or degrades gracefully with a clear message; no crashes.\nAuthor real code files, run real validation (compile + tests) using your execution tools, and commit the finished project to the configured workspace/repo. Do not defer any of the above to a later floor.",
+              "expected_output": "A cumulative implementation handoff representing the best complete state of the entire solution: current implementation status, files changed and relied upon, real validation evidence, corrected inherited claims, unresolved defects/risks, and exact review targets."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Builder's cumulative implementation of: {prompt}.\n\nThe full cumulative implementation handoff is available from the previous task. Judge the ENTIRE current solution state, not merely this floor's edits. Confirm inherited work was preserved or deliberately corrected, requirements are implemented end-to-end, claimed file changes and validation are genuine, and no material work is deferred on the assumption that a later floor will fix it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nJudge this implementation as if it were the final project, not merely this floor's delta. Verify claimed file changes and validation evidence would survive inspection — never accept fabricated commits, files, tests, or terminal output as real. After your verdict, always close with exactly:\nUNRESOLVED DEFECTS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved defects if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Build Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a rigorous build quality analyst. You hold implementation to a high standard but know when to let work through. You distinguish genuine gaps and fabricated evidence from imperfect-but-real work.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false,
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ]
+            },
+            "builder_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
+              "role": "Chief Implementation Engineer",
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:FileWriteTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool",
+                "crewai_tools:DirectorySearchTool",
+                "crewai_tools:FileCompressorTool",
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:WaitTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior end-to-end implementation engineer with full accountability. You inherit working state without blindly trusting it, inspect before editing, preserve valid work, correct defects, close missing requirements, resolve integration issues, and run real validation. You never assume another floor will cover anything you omit, and every pass must leave the whole project materially closer to complete and verified.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "research_master": "${outputs.research_floor_6.tasks_output[2].raw}",
+            "supporting_research": "FLOOR 1:\n${outputs.research_floor_1.tasks_output[0].raw}\n\nFLOOR 2:\n${outputs.research_floor_2.tasks_output[0].raw}\n\nFLOOR 3:\n${outputs.research_floor_3.tasks_output[0].raw}\n\nFLOOR 4:\n${outputs.research_floor_4.tasks_output[0].raw}\n\nFLOOR 5:\n${outputs.research_floor_5.tasks_output[0].raw}",
+            "previous_handoff": "${outputs.build_floor_2.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "build_pass_2",
+      "description": "Full-scope cumulative build floor; inherits and advances Build Floor 2."
+    },
+    "build_gate_3": {
+      "description": "Gate for build_floor_3: route to build_3_pass or build_3_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.build_floor_3.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.build_floor_3.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"build_3_pass\" : \"build_3_fail\""
+      },
+      "listen": "build_floor_3",
+      "router": true,
+      "emit": [
+        "build_3_pass",
+        "build_3_fail"
+      ]
+    },
+    "build_floor_4": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "builder_implementation",
+              "agent": "builder_worker",
+              "description": "Implement a complete, validated solution for: {prompt}.\n\nResearch Master Record (primary):\n{research_master}\n\nSupporting Research Evidence:\n{supporting_research}\n\nINHERITED PREVIOUS BUILD-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current implementation handoff. Continue from it and the existing workspace; do not restart.\n\nYou are fully and solely responsible for the ENTIRE implementation from all relevant aspects. Do not narrow yourself to a specialty, component, or assigned slice. Do not assume another engineer, later floor, analyst, or future pass will implement, repair, test, or validate anything you leave behind.\n\nWork cumulatively from the current project state and inherited handoff. Inspect the workspace before changing it. Preserve correct existing work, independently verify important inherited claims, correct defects, complete missing requirements, resolve blockers, integrate components, and run real validation. Do not restart the project or produce a parallel partial solution.\n\nReturn a CUMULATIVE IMPLEMENTATION HANDOFF representing the best complete state of the whole solution after your pass, not merely your own changes. Include: (1) current complete implementation state, (2) exact files changed in this pass and important inherited files relied on, (3) validation commands actually run and real results, (4) remaining unresolved issues or risks, (5) exact evidence/review targets. The next floor must be able to continue directly from this handoff and workspace state.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.\n\nCOMPLETE DELIVERABLE SET — produce ALL of these, no component may be omitted:\n1. VOICE REAL-TIME CONVERSATIONAL LAYER: mic capture, voice-activity detection, streaming ASR, streaming low-latency LLM, barge-in with interruptible chunked TTS.\n2. TEXT CHAT CONVERSATIONAL LAYER sharing the same reasoning core as voice.\n3. COMPUTER-USE LAYER for the agent: screen capture, vision understanding, deterministic action grammar, safe executor, and a self-correction loop.\n4. IMAGE GENERATION LAYER: image generation callable from both voice and text.\n5. WINDOWS OUT-OF-THE-BOX PACKAGING: one-click install + start scripts for Windows.\n6. LOW LATENCY: streaming everywhere, prewarmed models, no blocking downloads on first use.\n7. ROBUSTNESS: every failure is recoverable or degrades gracefully with a clear message; no crashes.\nAuthor real code files, run real validation (compile + tests) using your execution tools, and commit the finished project to the configured workspace/repo. Do not defer any of the above to a later floor.",
+              "expected_output": "A cumulative implementation handoff representing the best complete state of the entire solution: current implementation status, files changed and relied upon, real validation evidence, corrected inherited claims, unresolved defects/risks, and exact review targets."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Builder's cumulative implementation of: {prompt}.\n\nThe full cumulative implementation handoff is available from the previous task. Judge the ENTIRE current solution state, not merely this floor's edits. Confirm inherited work was preserved or deliberately corrected, requirements are implemented end-to-end, claimed file changes and validation are genuine, and no material work is deferred on the assumption that a later floor will fix it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nJudge this implementation as if it were the final project, not merely this floor's delta. Verify claimed file changes and validation evidence would survive inspection — never accept fabricated commits, files, tests, or terminal output as real. After your verdict, always close with exactly:\nUNRESOLVED DEFECTS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved defects if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Build Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a rigorous build quality analyst. You hold implementation to a high standard but know when to let work through. You distinguish genuine gaps and fabricated evidence from imperfect-but-real work.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false,
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ]
+            },
+            "builder_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
+              "role": "Chief Implementation Engineer",
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:FileWriteTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool",
+                "crewai_tools:DirectorySearchTool",
+                "crewai_tools:FileCompressorTool",
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:WaitTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior end-to-end implementation engineer with full accountability. You inherit working state without blindly trusting it, inspect before editing, preserve valid work, correct defects, close missing requirements, resolve integration issues, and run real validation. You never assume another floor will cover anything you omit, and every pass must leave the whole project materially closer to complete and verified.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "research_master": "${outputs.research_floor_6.tasks_output[2].raw}",
+            "supporting_research": "FLOOR 1:\n${outputs.research_floor_1.tasks_output[0].raw}\n\nFLOOR 2:\n${outputs.research_floor_2.tasks_output[0].raw}\n\nFLOOR 3:\n${outputs.research_floor_3.tasks_output[0].raw}\n\nFLOOR 4:\n${outputs.research_floor_4.tasks_output[0].raw}\n\nFLOOR 5:\n${outputs.research_floor_5.tasks_output[0].raw}",
+            "previous_handoff": "${outputs.build_floor_3.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "build_pass_3",
+      "description": "Full-scope cumulative build floor; inherits and advances Build Floor 3."
+    },
+    "build_gate_4": {
+      "description": "Gate for build_floor_4: route to build_4_pass or build_4_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.build_floor_4.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.build_floor_4.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"build_4_pass\" : \"build_4_fail\""
+      },
+      "listen": "build_floor_4",
+      "router": true,
+      "emit": [
+        "build_4_pass",
+        "build_4_fail"
+      ]
+    },
+    "build_floor_5": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "builder_implementation",
+              "agent": "builder_worker",
+              "description": "Implement a complete, validated solution for: {prompt}.\n\nResearch Master Record (primary):\n{research_master}\n\nSupporting Research Evidence:\n{supporting_research}\n\nINHERITED PREVIOUS BUILD-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current implementation handoff. Continue from it and the existing workspace; do not restart.\n\nYou are fully and solely responsible for the ENTIRE implementation from all relevant aspects. Do not narrow yourself to a specialty, component, or assigned slice. Do not assume another engineer, later floor, analyst, or future pass will implement, repair, test, or validate anything you leave behind.\n\nWork cumulatively from the current project state and inherited handoff. Inspect the workspace before changing it. Preserve correct existing work, independently verify important inherited claims, correct defects, complete missing requirements, resolve blockers, integrate components, and run real validation. Do not restart the project or produce a parallel partial solution.\n\nReturn a CUMULATIVE IMPLEMENTATION HANDOFF representing the best complete state of the whole solution after your pass, not merely your own changes. Include: (1) current complete implementation state, (2) exact files changed in this pass and important inherited files relied on, (3) validation commands actually run and real results, (4) remaining unresolved issues or risks, (5) exact evidence/review targets. The next floor must be able to continue directly from this handoff and workspace state.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.\n\nCOMPLETE DELIVERABLE SET — produce ALL of these, no component may be omitted:\n1. VOICE REAL-TIME CONVERSATIONAL LAYER: mic capture, voice-activity detection, streaming ASR, streaming low-latency LLM, barge-in with interruptible chunked TTS.\n2. TEXT CHAT CONVERSATIONAL LAYER sharing the same reasoning core as voice.\n3. COMPUTER-USE LAYER for the agent: screen capture, vision understanding, deterministic action grammar, safe executor, and a self-correction loop.\n4. IMAGE GENERATION LAYER: image generation callable from both voice and text.\n5. WINDOWS OUT-OF-THE-BOX PACKAGING: one-click install + start scripts for Windows.\n6. LOW LATENCY: streaming everywhere, prewarmed models, no blocking downloads on first use.\n7. ROBUSTNESS: every failure is recoverable or degrades gracefully with a clear message; no crashes.\nAuthor real code files, run real validation (compile + tests) using your execution tools, and commit the finished project to the configured workspace/repo. Do not defer any of the above to a later floor.",
+              "expected_output": "A cumulative implementation handoff representing the best complete state of the entire solution: current implementation status, files changed and relied upon, real validation evidence, corrected inherited claims, unresolved defects/risks, and exact review targets."
+            },
+            {
+              "name": "analyst_review",
+              "agent": "floor_analyst",
+              "description": "Review the Builder's cumulative implementation of: {prompt}.\n\nThe full cumulative implementation handoff is available from the previous task. Judge the ENTIRE current solution state, not merely this floor's edits. Confirm inherited work was preserved or deliberately corrected, requirements are implemented end-to-end, claimed file changes and validation are genuine, and no material work is deferred on the assumption that a later floor will fix it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nJudge this implementation as if it were the final project, not merely this floor's delta. Verify claimed file changes and validation evidence would survive inspection — never accept fabricated commits, files, tests, or terminal output as real. After your verdict, always close with exactly:\nUNRESOLVED DEFECTS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved defects if any remain).",
+              "expected_output": "FLOOR PASSED, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES."
+            }
+          ],
+          "agents": {
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
+              "role": "Floor Build Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a rigorous build quality analyst. You hold implementation to a high standard but know when to let work through. You distinguish genuine gaps and fabricated evidence from imperfect-but-real work.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false,
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ]
+            },
+            "builder_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
+              "role": "Chief Implementation Engineer",
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:FileWriteTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool",
+                "crewai_tools:DirectorySearchTool",
+                "crewai_tools:FileCompressorTool",
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:WaitTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior end-to-end implementation engineer with full accountability. You inherit working state without blindly trusting it, inspect before editing, preserve valid work, correct defects, close missing requirements, resolve integration issues, and run real validation. You never assume another floor will cover anything you omit, and every pass must leave the whole project materially closer to complete and verified.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "research_master": "${outputs.research_floor_6.tasks_output[2].raw}",
+            "supporting_research": "FLOOR 1:\n${outputs.research_floor_1.tasks_output[0].raw}\n\nFLOOR 2:\n${outputs.research_floor_2.tasks_output[0].raw}\n\nFLOOR 3:\n${outputs.research_floor_3.tasks_output[0].raw}\n\nFLOOR 4:\n${outputs.research_floor_4.tasks_output[0].raw}\n\nFLOOR 5:\n${outputs.research_floor_5.tasks_output[0].raw}",
+            "previous_handoff": "${outputs.build_floor_4.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "build_pass_4",
+      "description": "Full-scope cumulative build floor; inherits and advances Build Floor 4."
+    },
+    "build_gate_5": {
+      "description": "Gate for build_floor_5: route to build_5_pass or build_5_fail.",
+      "do": {
+        "call": "expression",
+        "expr": "outputs.build_floor_5.tasks_output[1].raw.contains(\"FLOOR PASSED\") || outputs.build_floor_5.tasks_output[1].raw.contains(\"PASSED WITH NOTES\") ? \"build_5_pass\" : \"build_5_fail\""
+      },
+      "listen": "build_floor_5",
+      "router": true,
+      "emit": [
+        "build_5_pass",
+        "build_5_fail"
+      ]
+    },
+    "build_floor_6": {
+      "do": {
+        "call": "crew",
+        "with": {
+          "tasks": [
+            {
+              "name": "builder_final_implementation",
+              "agent": "builder_worker",
+              "description": "Implement a complete, validated solution for: {prompt}.\n\nResearch Master Record (primary):\n{research_master}\n\nSupporting Research Evidence:\n{supporting_research}\n\nINHERITED PREVIOUS BUILD-FLOOR HANDOFF:\n{previous_handoff}\n\nThis is the current implementation handoff. Continue from it and the existing workspace; do not restart.\n\nYou are fully and solely responsible for the ENTIRE implementation from all relevant aspects. Do not narrow yourself to a specialty, component, or assigned slice. Do not assume another engineer, later floor, analyst, or future pass will implement, repair, test, or validate anything you leave behind.\n\nWork cumulatively from the current project state and inherited handoff. Inspect the workspace before changing it. Preserve correct existing work, independently verify important inherited claims, correct defects, complete missing requirements, resolve blockers, integrate components, and run real validation. Do not restart the project or produce a parallel partial solution.\n\nReturn a CUMULATIVE IMPLEMENTATION HANDOFF representing the best complete state of the whole solution after your pass, not merely your own changes. Include: (1) current complete implementation state, (2) exact files changed in this pass and important inherited files relied on, (3) validation commands actually run and real results, (4) remaining unresolved issues or risks, (5) exact evidence/review targets. The next floor must be able to continue directly from this handoff and workspace state.\n\nITERATION BUDGET: you have up to 40 reasoning + tool-use iterations to complete this job. Spend them decisively: go broad early, verify claims with tools, then converge hard on the final handoff. Do not exceed the budget; finish within it.\n\nYou have a maximum of 25 execution iterations available for this floor. Treat them as a finite mission budget and make every iteration count. Plan before using tools. Do not waste iterations repeating equivalent searches or rereading evidence already established. Spend iterations where they materially improve completeness, correctness, evidence quality, problem resolution, or the final deliverable. Preserve enough capacity near the end to consolidate, reconcile contradictions, close gaps, and produce the complete final work. Assume nobody after you will rescue an incomplete deliverable.\n\nCOMPLETE DELIVERABLE SET — produce ALL of these, no component may be omitted:\n1. VOICE REAL-TIME CONVERSATIONAL LAYER: mic capture, voice-activity detection, streaming ASR, streaming low-latency LLM, barge-in with interruptible chunked TTS.\n2. TEXT CHAT CONVERSATIONAL LAYER sharing the same reasoning core as voice.\n3. COMPUTER-USE LAYER for the agent: screen capture, vision understanding, deterministic action grammar, safe executor, and a self-correction loop.\n4. IMAGE GENERATION LAYER: image generation callable from both voice and text.\n5. WINDOWS OUT-OF-THE-BOX PACKAGING: one-click install + start scripts for Windows.\n6. LOW LATENCY: streaming everywhere, prewarmed models, no blocking downloads on first use.\n7. ROBUSTNESS: every failure is recoverable or degrades gracefully with a clear message; no crashes.\nAuthor real code files, run real validation (compile + tests) using your execution tools, and commit the finished project to the configured workspace/repo. Do not defer any of the above to a later floor.",
+              "expected_output": "A cumulative implementation handoff representing the best complete state of the entire solution: current implementation status, files changed and relied upon, real validation evidence, corrected inherited claims, unresolved defects/risks, and exact review targets."
+            },
+            {
+              "name": "analyst_final_review",
+              "agent": "floor_analyst",
+              "description": "Review the Builder's cumulative implementation of: {prompt}.\n\nThe full cumulative implementation handoff is available from the previous task. Judge the ENTIRE current solution state, not merely this floor's edits. Confirm inherited work was preserved or deliberately corrected, requirements are implemented end-to-end, claimed file changes and validation are genuine, and no material work is deferred on the assumption that a later floor will fix it.\n\nIf deficiencies exist, issue CORRECTION REQUIRED with exact gaps (up to 3 cycles). On the 3rd review, issue PASSED WITH NOTES if unresolved issues remain. If acceptable, issue FLOOR PASSED.\n\nITERATION BUDGET: you have up to 30 reasoning iterations to complete this review. Review the whole accumulated state decisively then issue your verdict. Do not exceed the budget.\n\nJudge this implementation as if it were the final project, not merely this floor's delta. Verify claimed file changes and validation evidence would survive inspection — never accept fabricated commits, files, tests, or terminal output as real. After your verdict, always close with exactly:\nUNRESOLVED DEFECTS FOR NEXT FLOOR:\nNONE\n(or list the genuinely unresolved defects if any remain).",
+              "expected_output": "FLOOR PASSED releasing to Final Auditor, CORRECTION REQUIRED with exact gaps, or (3rd pass) PASSED WITH NOTES releasing to Final Auditor."
+            },
+            {
+              "name": "final_verdict",
+              "agent": "final_auditor",
+              "description": "Issue the final PASS or FAIL verdict for the complete implementation of: {prompt}.\n\nResearch Master Record:\n{research_master}\n\nInherited Build Floor 5 handoff:\n{previous_handoff}\n\nThe final Builder cumulative handoff and analyst review are available from the preceding tasks. Judge the ENTIRE accumulated implementation against ALL requirements, not just Floor 6 changes. Require real validation evidence for consequential completion claims.\n\nStructure: ACCEPTED WORK, REMAINING DEFECTS, VALIDATION EVIDENCE, FINAL STATUS: PASS or FINAL STATUS: FAIL.\n\nITERATION BUDGET: you have up to 10 reasoning iterations to complete this release-gate review. Verify material claims against available evidence before deciding.\n\nYou are the final evidence-based release gate, not a stylistic reviewer. Issue exactly 'FINAL STATUS: PASS' or 'FINAL STATUS: FAIL'. PASS only when the implementation is genuinely complete enough to satisfy the project contract. FAIL must list exact remaining defects and the evidence/reasoning for failure. Do not issue PASS simply because all six floors executed.",
+              "expected_output": "Final audit verdict: ACCEPTED work summary, remaining DEFECTS if any, VALIDATION EVIDENCE, and an explicit FINAL STATUS: PASS or FINAL STATUS: FAIL."
+            }
+          ],
+          "agents": {
+            "final_auditor": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Issue the final PASS or FAIL verdict for the complete implementation of prompt: {prompt} against the full research record: {research_master}. Review ALL work done. Issue FINAL STATUS: PASS only if all requested work is implemented and validated with evidence. Issue FINAL STATUS: FAIL with exact remaining defects listed if anything is missing or unvalidated.",
+              "role": "Pipeline Final Quality Gate",
+              "verbose": true,
+              "max_iter": 10,
+              "backstory": "You are the final quality gate in this 6-floor build pipeline. You review the last implementation against the complete requirements. You issue FINAL STATUS: PASS only when the Builder handoff provides evidence that all requested work is implemented and validated. You issue FINAL STATUS: FAIL with exact remaining corrections if anything is missing.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false,
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool",
+                "crewai_tools:DirectorySearchTool"
+              ]
+            },
+            "floor_analyst": {
+              "llm": {
+                "model": "zai-org/GLM-5.3-Flash",
+                "base_url": "https://api.featherless.ai/v1",
+                "api_key": ""
+              },
+              "goal": "Critically review the Builder's final implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely. The Final Auditor depends on your clearance.",
+              "role": "Floor Build Analyst",
+              "verbose": true,
+              "max_iter": 12,
+              "backstory": "You are a rigorous build quality analyst and the final gate before the verdict is issued. You hold implementation to a high standard but know when to let work through.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false,
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool"
+              ]
+            },
+            "builder_worker": {
+              "llm": {
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "api_key": ""
+              },
+              "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
+              "role": "Chief Implementation Engineer",
+              "tools": [
+                "dl_tools:BashTool",
+                "dl_tools:FileWriteTool",
+                "dl_tools:GitTool",
+                "dl_tools:ValidateTool",
+                "crewai_tools:FileReadTool",
+                "crewai_tools:DirectoryReadTool",
+                "crewai_tools:DirectorySearchTool",
+                "crewai_tools:FileCompressorTool",
+                "crewai_tools:FirecrawlSearchTool",
+                "crewai_tools:FirecrawlScrapeWebsiteTool",
+                "crewai_tools:ScrapeWebsiteTool",
+                "crewai_tools:URLReadTool",
+                "crewai_tools:GithubSearchTool",
+                "crewai_tools:WaitTool"
+              ],
+              "verbose": true,
+              "max_iter": 25,
+              "backstory": "You are a senior end-to-end implementation engineer with full accountability. You inherit working state without blindly trusting it, inspect before editing, preserve valid work, correct defects, close missing requirements, resolve integration issues, and run real validation. You never assume another floor will cover anything you omit, and every pass must leave the whole project materially closer to complete and verified.",
+              "inject_date": true,
+              "planning_config": {
+                "max_attempts": 1
+              },
+              "allow_delegation": false
+            }
+          },
+          "inputs": {
+            "prompt": "${state.prompt}",
+            "research_master": "${outputs.research_floor_6.tasks_output[2].raw}",
+            "supporting_research": "FLOOR 1:\n${outputs.research_floor_1.tasks_output[0].raw}\n\nFLOOR 2:\n${outputs.research_floor_2.tasks_output[0].raw}\n\nFLOOR 3:\n${outputs.research_floor_3.tasks_output[0].raw}\n\nFLOOR 4:\n${outputs.research_floor_4.tasks_output[0].raw}\n\nFLOOR 5:\n${outputs.research_floor_5.tasks_output[0].raw}",
+            "previous_handoff": "${outputs.build_floor_5.tasks_output[0].raw}"
+          },
+          "verbose": true
+        }
+      },
+      "listen": "build_pass_5",
+      "description": "Full-scope cumulative build floor; inherits and advances Build Floor 5."
+    },
+    "final_verification_router": {
+      "do": {
+        "call": "expression",
+        "expr": "outputs.build_floor_6.tasks_output[2].raw.contains(\"FINAL STATUS: PASS\") ? \"build_passed\" : \"build_failed\""
+      },
+      "emit": [
+        "build_passed",
+        "build_failed"
+      ],
+      "listen": "build_floor_6",
+      "router": true,
+      "description": "Routes on the Floor 6 Final Auditor verdict: PASS delivers a completion summary; FAIL triggers a remediation notice listing exact remaining defects."
+    },
+    "pipeline_complete": {
+      "do": {
+        "call": "agent",
+        "with": {
+          "llm": {
+            "model": "openai/gemini-3.5-flash-lite",
+            "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+            "api_key": ""
+          },
+          "goal": "Produce a clear final summary of the completed investigation and build pipeline. Summarize what was researched, what was built, what was validated, and confirm successful completion.",
+          "role": "Pipeline Completion Reporter",
+          "input": "The Deep Investigator Build Pipeline has completed successfully for prompt: '${state.prompt}'\n\nFinal Build Audit (PASS):\n${outputs.build_floor_6.tasks_output[2].raw}\n\nProduce a concise completion summary covering: (1) what the investigation found, (2) what was built and validated, (3) any known limitations or open items.",
+          "verbose": true,
+          "max_iter": 5,
+          "backstory": "You produce the final summary report for a completed research-and-build pipeline. You are clear, concise, and honest about what was accomplished.",
+          "inject_date": true,
+          "planning_config": {
+            "max_attempts": 1
+          },
+          "allow_delegation": false
+        }
+      },
+      "listen": "build_passed",
+      "description": "Final output when the build passes. Summarizes completed work and delivers the final result."
+    },
+    "remediation_notice": {
+      "do": {
+        "call": "agent",
+        "with": {
+          "llm": {
+            "model": "openai/gemini-3.5-flash-lite",
+            "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+            "api_key": ""
+          },
+          "goal": "Produce a clear remediation notice listing every remaining defect exactly as identified by the Final Auditor. Make the defects actionable so a developer knows precisely what still needs to be done.",
+          "role": "Build Failure Analyst",
+          "input": "The Deep Investigator Build Pipeline completed with FINAL STATUS: FAIL for prompt: '${state.prompt}'\n\nFinal Build Audit (FAIL):\n${outputs.build_floor_6.tasks_output[2].raw}\n\nProduce a remediation notice that: (1) lists every remaining defect exactly as stated by the Auditor, (2) prioritizes them by severity, (3) suggests the most direct fix for each, (4) estimates which could be resolved in one more pass vs requiring a full re-run.",
+          "verbose": true,
+          "max_iter": 5,
+          "backstory": "You translate the Final Auditor's FAIL verdict into a clear, actionable remediation notice. You list every defect exactly, prioritize them, and suggest the most direct path to resolution.",
+          "inject_date": true,
+          "planning_config": {
+            "max_attempts": 1
+          },
+          "allow_delegation": false
+        }
+      },
+      "listen": {
+        "or": [
+          "research_1_fail",
+          "research_2_fail",
+          "research_3_fail",
+          "research_4_fail",
+          "research_5_fail",
+          "research_6_fail",
+          "human_rejected",
+          "build_1_fail",
+          "build_2_fail",
+          "build_3_fail",
+          "build_4_fail",
+          "build_5_fail",
+          "build_failed"
+        ]
+      },
+      "description": "Triggered when the build fails the final gate. Produces a remediation notice with exact remaining defects."
+    }
+  },
+  "description": "A 14-stage pipeline: six research floors and six build floors, each structured as a Worker + Floor Analyst crew. Every Worker believes it alone is fully responsible for completing the entire job — no awareness of any other floor. The Floor Analyst reviews the Worker's output, can require corrections up to 3 times, then passes the floor regardless. Research Floor 6 adds a Research Compiler. Build Floor 6 adds a Final Auditor who issues a hard PASS/FAIL gate. A human checkpoint sits between research and build phases. The final PASS/FAIL verdict routes to a completion summary or remediation notice."
+}

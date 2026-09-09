@@ -1,0 +1,11 @@
+.env
+settings.env
+.venv/
+__pycache__/
+.crewai/
+output/
+.dual_lobe/
+.beacon/
+voice_sessions/
+dist/
+workspace/
