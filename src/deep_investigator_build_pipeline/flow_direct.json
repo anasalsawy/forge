@@ -56,7 +56,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. You are a rigorous quality gate. Assess completeness: does the output fully address the prompt with sourced evidence? Assess integrity: are claimed URLs real, are facts cited, is inference distinguished from observation? Assess coverage: were multiple angles searched, are key claims multi-sourced? If deficiencies are found, issue a CORRECTION REQUIRED notice listing exact gaps \u2014 the Worker must address them. You may require corrections up to 3 times. On the 3rd review, if deficiencies still exist, issue PASSED WITH NOTES listing what remains unresolved, then pass the floor. Never block indefinitely.",
               "role": "Floor Research Analyst",
@@ -73,7 +73,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
               "role": "Chief Research Investigator",
@@ -142,7 +142,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Research Analyst",
@@ -159,7 +159,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
               "role": "Chief Research Investigator",
@@ -228,7 +228,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Research Analyst",
@@ -245,7 +245,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
               "role": "Chief Research Investigator",
@@ -314,7 +314,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Research Analyst",
@@ -331,7 +331,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
               "role": "Chief Research Investigator",
@@ -400,7 +400,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Research Analyst",
@@ -417,7 +417,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
               "role": "Chief Research Investigator",
@@ -492,7 +492,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely. The Research Compiler depends on your clearance.",
               "role": "Floor Research Analyst",
@@ -509,7 +509,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Investigate {prompt} completely and definitively from ALL relevant aspects. You are the sole investigator responsible for the whole job and must behave as though no later researcher will patch omissions. When a previous-floor handoff exists, treat it as the current working state: preserve supported work, independently verify it, correct errors, resolve gaps and contradictions, broaden the inquiry where needed, and advance it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative, evidence-grounded handoff containing the best complete state of the entire investigation.",
               "role": "Chief Research Investigator",
@@ -535,7 +535,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Compile the DEFINITIVE RESEARCH MASTER RECORD for prompt: {prompt}. Integrate all findings from this complete investigation into one comprehensive document. Include: (1) INVESTIGATION TRAIL summarizing what was found, (2) CONFIRMED FACTS each with source URLs and corroboration count, (3) UNCONFIRMED LEADS each with final status, (4) CONTRADICTIONS with conflicting sources listed, (5) COMPLETE URL INVENTORY of every URL visited, (6) OPEN QUESTIONS that could not be resolved. Do NOT summarize or compress. This is the complete raw record.",
               "role": "Research Master Record Compiler",
@@ -579,7 +579,7 @@
           "llm": {
             "model": "openai/gemini-3.5-flash-lite",
             "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-            "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+            "api_key": ""
           },
           "goal": "Present the completed Research Master Record to the human reviewer and collect their decision on whether to proceed to the build phase, reject the investigation, or request a re-run.",
           "role": "Research Review Coordinator",
@@ -633,7 +633,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and the full research record. Determine what is correct, what is incomplete, what is broken, and whether claimed validation is real. Assess completeness: does the output fully implement the requirements? Assess integrity: are claimed file changes real, is validation evidence genuine (not invented), are command outputs real? If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Build Analyst",
@@ -657,7 +657,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
               "role": "Chief Implementation Engineer",
@@ -735,7 +735,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Build Analyst",
@@ -759,7 +759,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
               "role": "Chief Implementation Engineer",
@@ -837,7 +837,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Build Analyst",
@@ -861,7 +861,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
               "role": "Chief Implementation Engineer",
@@ -939,7 +939,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Build Analyst",
@@ -963,7 +963,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
               "role": "Chief Implementation Engineer",
@@ -1041,7 +1041,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
               "role": "Floor Build Analyst",
@@ -1065,7 +1065,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
               "role": "Chief Implementation Engineer",
@@ -1149,7 +1149,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Issue the final PASS or FAIL verdict for the complete implementation of prompt: {prompt} against the full research record: {research_master}. Review ALL work done. Issue FINAL STATUS: PASS only if all requested work is implemented and validated with evidence. Issue FINAL STATUS: FAIL with exact remaining defects listed if anything is missing or unvalidated.",
               "role": "Pipeline Final Quality Gate",
@@ -1174,7 +1174,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Critically review the Builder's final implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely. The Final Auditor depends on your clearance.",
               "role": "Floor Build Analyst",
@@ -1198,7 +1198,7 @@
               "llm": {
                 "model": "openai/gemini-3.5-flash-lite",
                 "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-                "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+                "api_key": ""
               },
               "goal": "Deliver a complete, validated solution for {prompt} using {research_master}. You are the sole engineer responsible for the entire solution and must act as though no later engineer will patch omissions. When a previous-floor handoff exists, treat it as the current implementation state: inspect and verify it, preserve correct work, fix defects, complete all remaining requirements, resolve blockers, integrate the solution, and validate it. Never restart as a parallel duplicate and never limit yourself to a preassigned scope. Produce a cumulative implementation handoff representing the best complete state of the entire solution.",
               "role": "Chief Implementation Engineer",
@@ -1260,7 +1260,7 @@
           "llm": {
             "model": "openai/gemini-3.5-flash-lite",
             "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-            "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+            "api_key": ""
           },
           "goal": "Produce a clear final summary of the completed investigation and build pipeline. Summarize what was researched, what was built, what was validated, and confirm successful completion.",
           "role": "Pipeline Completion Reporter",
@@ -1285,7 +1285,7 @@
           "llm": {
             "model": "openai/gemini-3.5-flash-lite",
             "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-            "api_key": "AQ.Ab8RN6I-kBFQL2FXH7BaMSHvLtpcc3ydTRnTS3TfpGrn_LUtDA"
+            "api_key": ""
           },
           "goal": "Produce a clear remediation notice listing every remaining defect exactly as identified by the Final Auditor. Make the defects actionable so a developer knows precisely what still needs to be done.",
           "role": "Build Failure Analyst",
