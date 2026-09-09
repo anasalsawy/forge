@@ -54,8 +54,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. You are a rigorous quality gate. Assess completeness: does the output fully address the prompt with sourced evidence? Assess integrity: are claimed URLs real, are facts cited, is inference distinguished from observation? Assess coverage: were multiple angles searched, are key claims multi-sourced? If deficiencies are found, issue a CORRECTION REQUIRED notice listing exact gaps — the Worker must address them. You may require corrections up to 3 times. On the 3rd review, if deficiencies still exist, issue PASSED WITH NOTES listing what remains unresolved, then pass the floor. Never block indefinitely.",
@@ -140,8 +140,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -226,8 +226,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -312,8 +312,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -398,8 +398,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -490,8 +490,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Research Worker's investigation output for prompt: {prompt}. Assess completeness, factual integrity, source quality, and coverage. If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass the floor with PASSED WITH NOTES if issues remain. Never block indefinitely. The Research Compiler depends on your clearance.",
@@ -631,8 +631,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and the full research record. Determine what is correct, what is incomplete, what is broken, and whether claimed validation is real. Assess completeness: does the output fully implement the requirements? Assess integrity: are claimed file changes real, is validation evidence genuine (not invented), are command outputs real? If deficiencies exist, issue CORRECTION REQUIRED listing exact gaps. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -733,8 +733,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -835,8 +835,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -937,8 +937,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -1039,8 +1039,8 @@
           "agents": {
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Builder's implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely.",
@@ -1147,8 +1147,8 @@
           "agents": {
             "final_auditor": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Issue the final PASS or FAIL verdict for the complete implementation of prompt: {prompt} against the full research record: {research_master}. Review ALL work done. Issue FINAL STATUS: PASS only if all requested work is implemented and validated with evidence. Issue FINAL STATUS: FAIL with exact remaining defects listed if anything is missing or unvalidated.",
@@ -1172,8 +1172,8 @@
             },
             "floor_analyst": {
               "llm": {
-                "model": "zai-org/GLM-5.3-Flash",
-                "base_url": "https://api.featherless.ai/v1",
+                "model": "openai/gemini-3.5-flash-lite",
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
                 "api_key": ""
               },
               "goal": "Critically review the Builder's final implementation handoff against the original prompt: {prompt} and research record. Assess completeness and validation authenticity. Issue CORRECTION REQUIRED listing exact gaps if deficiencies exist. You may require corrections up to 3 times. On the 3rd review, pass with PASSED WITH NOTES if issues remain. Never block indefinitely. The Final Auditor depends on your clearance.",
