@@ -82,7 +82,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:FileReadTool",
                 "crewai_tools:DirectoryReadTool"
               ],
@@ -168,7 +167,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:FileReadTool",
                 "crewai_tools:DirectoryReadTool"
               ],
@@ -254,7 +252,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:FileReadTool",
                 "crewai_tools:DirectoryReadTool"
               ],
@@ -340,7 +337,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:FileReadTool",
                 "crewai_tools:DirectoryReadTool"
               ],
@@ -426,7 +422,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:FileReadTool",
                 "crewai_tools:DirectoryReadTool"
               ],
@@ -518,7 +513,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:FileReadTool",
                 "crewai_tools:DirectoryReadTool"
               ],
@@ -674,7 +668,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:WaitTool"
               ],
               "verbose": true,
@@ -776,7 +769,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:WaitTool"
               ],
               "verbose": true,
@@ -878,7 +870,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:WaitTool"
               ],
               "verbose": true,
@@ -980,7 +971,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:WaitTool"
               ],
               "verbose": true,
@@ -1082,7 +1072,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:WaitTool"
               ],
               "verbose": true,
@@ -1215,7 +1204,6 @@
                 "crewai_tools:FirecrawlScrapeWebsiteTool",
                 "crewai_tools:ScrapeWebsiteTool",
                 "crewai_tools:URLReadTool",
-                "crewai_tools:GithubSearchTool",
                 "crewai_tools:WaitTool"
               ],
               "verbose": true,
